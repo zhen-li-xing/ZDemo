@@ -114,6 +114,7 @@ typedef NS_ENUM(NSInteger,NetworkMethod) {
 
 
 + (AFHTTPSessionManager *)setManagerWithRequestHeader;
+
 + (AFSecurityPolicy*)customSecurityPolicy;
 
 

@@ -8,6 +8,7 @@
 
 #import "NetWork.h"
 #import <objc/runtime.h>
+#import "LZCache.h"
 
 #define RequestBaseUrl @"https://api.unsplash.com/"
 
@@ -339,27 +340,55 @@ static AFHTTPSessionManager * netManager = nil;
 #pragma mark - GET请求
 - (void)eGetRequestManager:(AFHTTPSessionManager*)manager url:(NSString*)url params:(id)param result:(void (^)(id))resultData
 {
-    NSURLSessionDataTask *requestTask = [manager GET:url parameters:param progress:^(NSProgress * _Nonnull downloadProgress) {
-        NSLog(@"请求ing......");
-    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        NSLog(@"---%@",task.response);
-        
-        [self removeTask:task];
-        
-        NSArray * data = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingMutableContainers error:nil];
-        
-        if (resultData) {
-            resultData(data);
-        }
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        NSLog(@"[请求失败] ===> [%@]",error.userInfo);
-        [self removeTask:task];
-        if (resultData) {
-            NSDictionary *errDict = @{@"status":@"12332",@"msg":@"请求失败了..."};
-            resultData(errDict);
-        }
-    }];
-    [self addTask:requestTask];
+    NSString * paramJson = [self toJsonFormatterWithData:param];
+    NSString * saveKey = [NSString stringWithFormat:@"%@-%@",url,paramJson];
+    
+    if (![NetWork getCurrentNetworkStatus]) {//无网络状态读取缓存
+        NSLog(@"请检查网络");
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            //超过一天的时间 不读取缓存
+            NSData * responseObject = [[LZCache shareInstance] getDataWithNameString:saveKey Withtime:60*60*24];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (responseObject) {
+                    NSArray * data = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingMutableContainers error:nil];
+                    
+                    if (resultData) {
+                        resultData(data);
+                    }
+                }else{
+                    if (resultData) {
+                        NSDictionary *errDict = @{@"status":@"12332",@"msg":@"请求失败了..."};
+                        resultData(errDict);
+                    }
+                }
+            });
+        });
+    }else{
+        NSURLSessionDataTask *requestTask = [manager GET:url parameters:param progress:^(NSProgress * _Nonnull downloadProgress) {
+            NSLog(@"请求ing......");
+        } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+            NSLog(@"---%@",task.response);
+            
+            [self removeTask:task];
+            [[LZCache shareInstance] saveWithData:responseObject andNameString:saveKey];
+            
+            NSArray * data = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingMutableContainers error:nil];
+            
+            if (resultData) {
+                resultData(data);
+            }
+        } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+            NSLog(@"[请求失败] ===> [%@]",error.userInfo);
+            [self removeTask:task];
+            if (resultData) {
+                NSDictionary *errDict = @{@"status":@"12332",@"msg":@"请求失败了..."};
+                resultData(errDict);
+            }
+        }];
+        [self addTask:requestTask];
+    }
+    
 }
     
     
@@ -397,6 +426,19 @@ static AFHTTPSessionManager * netManager = nil;
     securityPolicy.validatesDomainName = NO;
     securityPolicy.pinnedCertificates = [[NSSet alloc] initWithObjects:certData,nil];
     return securityPolicy;
+}
+
+
+#pragma mark -
+#pragma mark - 数据转json字符串
+- (NSString*)toJsonFormatterWithData:(id)data
+{
+    if (data) {
+        NSError *parseError = nil;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:NSJSONWritingPrettyPrinted error:&parseError];
+        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    }
+    return nil;
 }
 
 

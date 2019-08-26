@@ -19,11 +19,6 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    [NetWork getRequestBaseUrl:@"https://api.unsplash.com/" api:@"photos?client_id=7babfa1738fc5d780def7f1404efed7af9ea600970680b698d5b13cba05dca13" param:@{@"page":@"1",@"per_page":@"20"} result:^(id result) {
-                NSLog(@"%@",result);
-    }];
-    
-    
     UIButton * btn = [UIButton buttonWithType:UIButtonTypeCustom];
     [btn setTitle:@"UICollectionView" forState:UIControlStateNormal];
     btn.frame = CGRectMake(10, 200, deviceWidth - 20, 40);

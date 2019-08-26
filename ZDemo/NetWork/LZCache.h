@@ -23,4 +23,7 @@
 //存数据   根据接口不同,保存文件,保存 NSData
 - (void)saveWithData:(NSData *)data andNameString:(NSString *)urlString;
 
+/** 串行队列 */
+@property (nonatomic,strong)dispatch_queue_t queue;
+
 @end

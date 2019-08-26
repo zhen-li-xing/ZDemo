@@ -323,9 +323,9 @@
 			isa = PBXGroup;
 			children = (
 				6F3C1D302310ECE200817493 /* EPhotoShowViews.h */,
+				6F3C1D332310ECE200817493 /* EPhotoShowViews.m */,
 				6F3C1D312310ECE200817493 /* EPhotoBrowser.m */,
 				6F3C1D322310ECE200817493 /* EPhotoBrowser.h */,
-				6F3C1D332310ECE200817493 /* EPhotoShowViews.m */,
 			);
 			path = PhotoBrowser;
 			sourceTree = "<group>";

@@ -61,12 +61,7 @@
 #pragma mark - UICollectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
-//    if (self.dataList.count > indexPath.row) {
-//        YSmallVideoItemModel *itemModel = self.dataList[indexPath.row];
-//        if (self.smallVideoClick) {
-//            self.smallVideoClick(itemModel, indexPath);
-//        }
-//    }
+
 }
 
 #pragma mark -- ZWaterFlowLayoutDelegate
